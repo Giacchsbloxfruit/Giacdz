@@ -64,7 +64,7 @@ loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc61
   })
   
   AddButton(Tab2o, {
-     Name = "Simple",
+     Name = "Simple kaitun",
     Callback = function()
 	  loadstring(game:HttpGet("https://raw.githubusercontent.com/TBoyRoblox727/TBoyRobloxYT/refs/heads/main/bloxfruit-kaitan-main.lua"))()
   end
