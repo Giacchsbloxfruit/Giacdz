@@ -130,7 +130,7 @@ loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/beab72edac68fb
   })
   
   AddButton(Tab1o, {
-     Name = "Giacdz",
+     Name = "Quantum Onyx",
     Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/Trustmenotcondom/QTONYX/refs/heads/main/QuantumOnyx.lua"))()
   end
