@@ -2,7 +2,7 @@ loadstring(game:HttpGet(("https://raw.githubusercontent.com/daucobonhi/Ui-Redz-V
 
        local Window = MakeWindow({
          Hub = {
-         Title = "GiacdzHub",
+         Title = "GiacdzHub v2",
          Animation = "Starting"
          },
         Key = {
@@ -36,23 +36,22 @@ loadstring(game:HttpGet(("https://raw.githubusercontent.com/daucobonhi/Ui-Redz-V
 ------- BUTTON
     
     AddButton(Tab1o, {
-     Name = "Redz hub",
+     Name = "Redz hub (beta)",
     Callback = function()
 	  local Settings = {
   JoinTeam = "Pirates"; -- Pirates/Marines
   Translator = true; -- true/false
 }
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"))(Settings)
+getgenv().BETA_VERSION = true
+loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Scripts/refs/heads/main/main.luau"))(Settings)    
   end
   })
   
   AddButton(Tab1o, {
      Name = "W-azure v2",
     Callback = function()
-	  getgenv().Team = "Pirates"
-getgenv().AutoLoad = false --Will Load Script On Server Hop
-loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc6104dabe8e19562e5cc2.lua"))()
+	  loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/85e904ae1ff30824c1aa007fc7324f8f.lua"))()
   end
   })
   
@@ -71,8 +70,69 @@ loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc61
   })
   
   AddButton(Tab1o, {
-     Name = "Cokka hub",
+     Name = "Teddy hub",
     Callback = function()
-	  loadstring(game:HttpGet"https://raw.githubusercontent.com/UserDevEthical/Loadstring/main/CokkaHub.lua")()
+	  repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Teddyseetink/Haidepzai/refs/heads/main/TeddyHub.lua"))()
   end
   })
+  
+  AddButton(Tab1o, {
+     Name = "đạt thg v1",
+    Callback = function()
+	  loadstring(game:HttpGet("https://raw.githubusercontent.com/LuaCrack/DatThg/refs/heads/main/DatThgV1"))()
+  end
+  })
+  
+  AddButton(Tab1o, {
+     Name = "zee hub",
+    Callback = function()
+	  loadstring(game:HttpGet("https://zuwz.me/Ls-Zee-Hub"))()
+  end
+  })
+  
+  AddButton(Tab1o, {
+     Name = "Ngọc Bổng Gaming",
+    Callback = function()
+	  getgenv().Team = "Marines"
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ngocbonggaming/script/refs/heads/main/NgocBongVn.lua"))()
+  end
+  })
+  
+  AddButton(Tab3o, {
+     Name = "Buff 5x lucky Blox fruit (key)",
+    Callback = function()
+	  loadstring(game:HttpGet("https://raw.githubusercontent.com/qbaoscript/x5/refs/heads/main/X5LuckyRandomVip.lua"))()
+  end
+  })
+  
+  AddButton(Tab1o, {
+     Name = "Andepzai hub",
+    Callback = function()
+	  loadstring(game:HttpGet("https://raw.githubusercontent.com/h6hbii/AnDepZaiHub/refs/heads/main/AndepzaiHub.lua"))()
+  end
+  })
+  
+    AddButton(Tab1o, {
+     Name = "Giacdz",
+    Callback = function()
+      getgenv().team = "Marines"
+repeat wait() until game:IsLoaded() and game.Players.LocalPlayer:FindFirstChild("DataLoaded")
+loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/beab72edac68fb260ca9d214e83e2606.lua"))()
+  end
+  })
+  
+  AddButton(Tab1o, {
+     Name = "Banana hub premium",
+    Callback = function()
+      game.Players.LocalPlayer:Kick("You have been banned for using disadvantages In-Game(Cheating, Exploiting etc.). If you think this is a mistake, please head over to the support channel.")
+  end
+  })
+  
+  AddButton(Tab1o, {
+     Name = "Giacdz",
+    Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Trustmenotcondom/QTONYX/refs/heads/main/QuantumOnyx.lua"))()
+  end
+  })
+  
