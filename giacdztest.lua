@@ -21,11 +21,11 @@ LP.CharacterAdded:Connect(UpdateChar)
 -- ===== SETTINGS =====
 local SPEED = 200
 local STEP = 40
-local ATTACK_DISTANCE = 30
-local ATTACK_DELAY = 0.15
+local ATTACK_DISTANCE = 20
+local ATTACK_DELAY = 0.18
 local AUTO_KILL = true
 
--- ===== SAFE TWEEN =====
+-- ===== SAFE TWEEN (KHÔNG RỚT NƯỚC) =====
 local function TweenTo(cf)
     local start = Root.Position
     local target = Vector3.new(cf.Position.X, start.Y, cf.Position.Z)
@@ -49,12 +49,21 @@ local function EquipMelee()
     local char = LP.Character
     if not char then return end
 
-    local tool = char:FindFirstChildOfClass("Tool")
-    if tool then return end
+    if char:FindFirstChildOfClass("Tool") then return end
 
-    local backpack = LP.Backpack:GetChildren()
-    if backpack[1] then
-        char.Humanoid:EquipTool(backpack[1])
+    local bp = LP.Backpack:GetChildren()
+    if bp[1] then
+        char.Humanoid:EquipTool(bp[1])
+    end
+end
+
+-- ===== ATTACK ONCE (GÂY DAME THẬT) =====
+local function AttackOnce()
+    local char = LP.Character
+    if not char then return end
+    local tool = char:FindFirstChildOfClass("Tool")
+    if tool then
+        tool:Activate()
     end
 end
 
@@ -64,7 +73,7 @@ local function Alive(mon)
     return hum and hum.Health > 0
 end
 
--- ===== AUTO KILL (CORE) =====
+-- ===== AUTO KILL CORE =====
 local function Kill(mon)
     if not mon or not Alive(mon) then return end
     local hrp = mon:FindFirstChild("HumanoidRootPart")
@@ -78,16 +87,22 @@ local function Kill(mon)
 
     EquipMelee()
 
-    -- đứng trên đầu quái → gây dame hitbox
+    -- đứng trên đầu quái
     Root.CFrame = hrp.CFrame * CFrame.new(0, 25, 0)
+
+    -- gây dame
+    AttackOnce()
 end
 
--- ===== FIND TARGET =====
+-- ===== FIND TARGET (BANDIT / MONKEY) =====
 local function GetTarget()
     for _, mon in pairs(Enemies:GetChildren()) do
         if mon:FindFirstChild("HumanoidRootPart") and Alive(mon) then
-            if (Root.Position - mon.HumanoidRootPart.Position).Magnitude <= ATTACK_DISTANCE then
-                return mon
+            local name = mon.Name
+            if name == "Bandit" or name == "Monkey" then
+                if (Root.Position - mon.HumanoidRootPart.Position).Magnitude <= ATTACK_DISTANCE then
+                    return mon
+                end
             end
         end
     end
@@ -105,23 +120,29 @@ task.spawn(function()
     end
 end)
 
--- ===== TAKE QUEST (LEVEL 1–9) =====
+-- ===== TAKE QUEST (SEA 1) =====
 local function TakeQuest()
     local lv = LP.Data.Level.Value
     local team = LP.Team
     if not team then return end
 
+    -- BANDIT (1–9)
     if lv <= 9 then
         if team.Name == "Pirates" then
             TweenTo(CFrame.new(1058.968, 12.666, 1551.814))
             task.wait(0.3)
             CommF:InvokeServer("StartQuest", "BanditQuest1", 1)
-
         elseif team.Name == "Marines" then
             TweenTo(CFrame.new(-2708.5769, 23.4660, 2105.3479))
             task.wait(0.3)
             CommF:InvokeServer("StartQuest", "MarineQuest", 1)
         end
+
+    -- MONKEY (10–14)
+    elseif lv >= 10 and lv <= 14 then
+        TweenTo(CFrame.new(-1598.08911, 35.5501175, 153.377838))
+        task.wait(0.3)
+        CommF:InvokeServer("StartQuest", "JungleQuest", 1)
     end
 end
 
