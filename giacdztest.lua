@@ -2,129 +2,79 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local LP = Players.LocalPlayer
 local CommF = ReplicatedStorage.Remotes.CommF_
-local Enemies = workspace:WaitForChild("Enemies")
 
--- ===== CORE VARS =====
-local Root
-local function UpdateRoot()
-    local char = LP.Character or LP.CharacterAdded:Wait()
-    Root = char:WaitForChild("HumanoidRootPart")
-end
-UpdateRoot()
-LP.CharacterAdded:Connect(UpdateRoot)
-
--- ===== SETTINGS =====
+-- ===== CONFIG =====
 local SPEED = 200
 local STEP = 40
-local ATTACK_DISTANCE = 30
-local LOOP_DELAY = 0.15
 
--- ===== SAFE TWEEN =====
+-- ===== GET LEVEL =====
+local function GetLevel()
+    return LP.Data.Level.Value
+end
+
+-- ===== CHECK QUEST =====
+local function HasQuest()
+    local gui = LP.PlayerGui:FindFirstChild("Main")
+    if not gui then return false end
+    return gui.Quest.Visible
+end
+
+-- ===== SAFE TWEEN (KHÔNG RỚT NƯỚC) =====
 local function TweenTo(cf)
-    local start = Root.Position
+    local char = LP.Character or LP.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    local start = hrp.Position
     local target = Vector3.new(cf.Position.X, start.Y, cf.Position.Z)
     local dist = (target - start).Magnitude
     local steps = math.max(1, math.floor(dist / STEP))
+
     for i = 1, steps do
-        local pos = start:Lerp(target, i/steps)
-        local t = (Root.Position - pos).Magnitude / SPEED
-        TweenService:Create(Root, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)}):Play()
+        local pos = start:Lerp(target, i / steps)
+        local t = (hrp.Position - pos).Magnitude / SPEED
+
+        TweenService:Create(
+            hrp,
+            TweenInfo.new(t, Enum.EasingStyle.Linear),
+            {CFrame = CFrame.new(pos)}
+        ):Play()
+
         task.wait(t)
     end
 end
 
--- ===== EQUIP MELEE =====
-local function EquipMelee()
-    local char = LP.Character
-    if not char then return end
-    if char:FindFirstChildOfClass("Tool") then return end
-    for _,tool in pairs(LP.Backpack:GetChildren()) do
-        if tool:IsA("Tool") then
-            char.Humanoid:EquipTool(tool)
-            break
-        end
-    end
-end
-
--- ===== FIND ENEMY =====
-local function GetNearestEnemy(names)
-    local best
-    local minDist = math.huge
-    for _,mon in pairs(Enemies:GetChildren()) do
-        if mon:FindFirstChild("HumanoidRootPart")
-        and mon:FindFirstChild("Humanoid")
-        and mon.Humanoid.Health > 0 then
-            for _,n in pairs(names) do
-                if mon.Name == n then
-                    local d = (Root.Position - mon.HumanoidRootPart.Position).Magnitude
-                    if d < minDist then
-                        minDist = d
-                        best = mon
-                    end
-                end
-            end
-        end
-    end
-    return best
-end
-
--- ===== "KILL" LOGIC BASED ON GIACYEUEM STYLE =====
-local function DoFight(mon)
-    if not mon then return end
-
-    -- LOCK POSITION:
-    if not mon:GetAttribute("Locked") then
-        mon:SetAttribute("Locked", mon.HumanoidRootPart.CFrame)
-    end
-
-    -- bring to locked
-    local lockedCF = mon:GetAttribute("Locked")
-    mon.HumanoidRootPart.CFrame = lockedCF
-    mon.HumanoidRootPart.CanCollide = false
-    mon.Humanoid.WalkSpeed = 0
-
-    -- equip melee
-    EquipMelee()
-
-    -- tele ABOVE enemy
-    Root.CFrame = lockedCF * CFrame.new(0, 30, 0)
-
-    -- damage trigger
-    for i=1,3 do
-        Root.CFrame = lockedCF * CFrame.new(0, 30, 0)
-        task.wait(0.03)
-    end
-end
-
--- ===== AUTO LOOP =====
+-- ===== AUTO TAKE / RETAKE QUEST =====
 task.spawn(function()
-    while task.wait(LOOP_DELAY) do
+    while task.wait(1) do
+        pcall(function()
+            if HasQuest() then return end
 
-        local lv = LP.Data.Level.Value
-        local team = LP.Team and LP.Team.Name
+            local lv = GetLevel()
+            local team = LP.Team and LP.Team.Name
+            if not team then return end
 
-        local target
+            -- LEVEL 1–9
+            if lv <= 9 then
+                if team == "Pirates" then
+                    TweenTo(CFrame.new(1058.968, 12.666, 1551.814))
+                    task.wait(0.3)
+                    CommF:InvokeServer("StartQuest", "BanditQuest1", 1)
 
-        -- SEA 1
-        if lv <= 9 then
-            if team == "Pirates" then
-                target = GetNearestEnemy({"Bandit"})
-            elseif team == "Marines" then
-                target = GetNearestEnemy({"Trainee"})
+                elseif team == "Marines" then
+                    TweenTo(CFrame.new(-2708.5769, 23.4660, 2105.3479))
+                    task.wait(0.3)
+                    CommF:InvokeServer("StartQuest", "MarineQuest", 1)
+                end
+
+            -- LEVEL 10–14 (MONKEY)
+            elseif lv >= 10 and lv <= 14 then
+                TweenTo(CFrame.new(-1598.089, 35.55, 153.377))
+                task.wait(0.3)
+                CommF:InvokeServer("StartQuest", "JungleQuest", 1)
             end
-        elseif lv >= 10 and lv <= 14 then
-            target = GetNearestEnemy({"Monkey"})
-        end
-
-        -- fight if near
-        if target then
-            DoFight(target)
-        end
-
+        end)
     end
 end)
