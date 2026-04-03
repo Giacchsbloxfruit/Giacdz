@@ -1,0 +1,75 @@
+-- ========================================================
+-- [[ 🛡️ GIACDZ PVP SAFEGUARD - ANTI-FALL EDITION ]]
+-- ========================================================
+
+-- CẤU HÌNH (Bạn có thể chỉnh sửa)
+local LOW_HEALTH_PERCENT = 40    -- Dưới 40% máu sẽ bay đi
+local RECOVER_HEALTH_PERCENT = 75 -- Trên 75% máu sẽ quay lại chiến đấu
+local SKY_HEIGHT = 5000          -- Độ cao cực đại (Tránh mọi skill)
+
+-- BIẾN HỆ THỐNG
+local LP = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
+_G.IsEscaping = false
+
+-- Hàm thông báo
+local function Notify(title, text)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = 3
+    })
+end
+
+-- VÒNG LẶP KIỂM TRA SIÊU TỐC
+RunService.Heartbeat:Connect(function()
+    pcall(function()
+        local char = LP.Character
+        local hum = char and char:FindFirstChild("Humanoid")
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+
+        if hum and root and hum.Health > 0 then
+            local currentHealthP = (hum.Health / hum.MaxHealth) * 100
+
+            -- 1. KIỂM TRA TRẠNG THÁI MÁU
+            if currentHealthP <= LOW_HEALTH_PERCENT and not _G.IsEscaping then
+                _G.IsEscaping = true
+                Notify("🚨 NGUY HIỂM", "Máu thấp! Đang đóng băng trên không trung.")
+            elseif currentHealthP >= RECOVER_HEALTH_PERCENT and _G.IsEscaping then
+                _G.IsEscaping = false
+                Notify("✅ AN TOÀN", "Đã hồi máu, quay lại chiến đấu!")
+            end
+
+            -- 2. THỰC HIỆN ĐÓNG BĂNG VỊ TRÍ (NẾU ĐANG ESCAPE)
+            if _G.IsEscaping then
+                -- Tạo lực nâng chống rơi (Anti-Fall)
+                local bv = root:FindFirstChild("Giacdz_AntiFall")
+                if not bv then
+                    bv = Instance.new("BodyVelocity")
+                    bv.Name = "Giacdz_AntiFall"
+                    bv.Parent = root
+                end
+                
+                -- Khóa mọi chuyển động (Đứng yên 100%)
+                bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                bv.Velocity = Vector3.new(0, 0, 0)
+
+                -- Ép tọa độ lên trời (Giữ nguyên X, Z nhưng đẩy Y lên cao)
+                root.CFrame = CFrame.new(root.Position.X, SKY_HEIGHT, root.Position.Z)
+                
+                -- Xóa bỏ mọi lực tác động bên ngoài (tránh bị đẩy bởi skill đối thủ)
+                root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            else
+                -- Xóa bỏ đóng băng khi đã an toàn
+                if root:FindFirstChild("Giacdz_AntiFall") then
+                    root.Giacdz_AntiFall:Destroy()
+                end
+            end
+        end
+    end)
+end)
+
+Notify("Giacdz Safeguard", "Hệ thống bảo vệ đã sẵn sàng!")
+
+loadstring(game:HttpGet("https://pandadevelopment.net/virtual/file/e9c206fd76482ee2"))()
