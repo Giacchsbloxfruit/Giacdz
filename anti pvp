@@ -3,8 +3,8 @@
 -- ========================================================
 
 -- CẤU HÌNH (Bạn có thể chỉnh sửa)
-local LOW_HEALTH_PERCENT = 40    -- Dưới 40% máu sẽ bay đi
-local RECOVER_HEALTH_PERCENT = 75 -- Trên 75% máu sẽ quay lại chiến đấu
+local LOW_HEALTH_PERCENT = 39    -- Dưới 40% máu sẽ bay đi
+local RECOVER_HEALTH_PERCENT = 70 -- Trên 75% máu sẽ quay lại chiến đấu
 local SKY_HEIGHT = 5000          -- Độ cao cực đại (Tránh mọi skill)
 
 -- BIẾN HỆ THỐNG
