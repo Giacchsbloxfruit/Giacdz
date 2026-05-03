@@ -5,13 +5,13 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 
--- Hàm hỗ trợ Tween
+-- Hàm hỗ trợ Tween nhanh
 local function SmoothTween(obj, goal, time)
-    TweenService:Create(obj, TweenInfo.new(time or 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal):Play()
+    TweenService:Create(obj, TweenInfo.new(time or 0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal):Play()
 end
 
 -- Hàm kéo thả
-local function EnableDrag(frame, parent)
+local function MakeDraggable(frame, parent)
     local dragging, dragInput, dragStart, startPos
     frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -33,42 +33,44 @@ function Library.new(hubName)
 
     -- ScreenGui
     self.ScreenGui = Instance.new("ScreenGui", CoreGui)
-    self.ScreenGui.Name = "ZicZac_Ultra_UI"
+    self.ScreenGui.Name = "ZicZac_Ultra_Hub"
 
-    -- Main Frame
+    -- Main Frame (Kính mờ xịn)
     self.Main = Instance.new("ImageLabel", self.ScreenGui)
-    self.Main.Size = UDim2.new(0, 620, 0, 380)
-    self.Main.Position = UDim2.new(0.5, -310, 0.5, -190)
-    self.Main.Image = "rbxassetid://13101342621" -- Anime Background
+    self.Main.Size = UDim2.new(0, 680, 0, 420)
+    self.Main.Position = UDim2.new(0.5, -340, 0.5, -210)
+    self.Main.Image = "rbxassetid://11625435220" -- Ảnh Anime phong cảnh
     self.Main.ScaleType = Enum.ScaleType.Crop
-    self.Main.ClipsDescendants = true -- KHÔNG CHO TAB LÒI RA NGOÀI
+    self.Main.ClipsDescendants = true
     
-    Instance.new("UICorner", self.Main).CornerRadius = UDim.new(0, 15)
-    local MainStroke = Instance.new("UIStroke", self.Main)
-    MainStroke.Color = Color3.fromRGB(255, 255, 255)
-    MainStroke.Transparency = 0.8
+    local Corner = Instance.new("UICorner", self.Main)
+    Corner.CornerRadius = UDim.new(0, 16) -- Bo góc lớn cho sang
 
     -- Overlay Blur (Lớp phủ kính)
     local Overlay = Instance.new("Frame", self.Main)
     Overlay.Size = UDim2.new(1, 0, 1, 0)
-    Overlay.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    Overlay.BackgroundTransparency = 0.4
-    Instance.new("UICorner", Overlay).CornerRadius = UDim.new(0, 15)
+    Overlay.BackgroundColor3 = Color3.fromRGB(18, 18, 25) -- Xanh Navy đậm
+    Overlay.BackgroundTransparency = 0.35
+    Instance.new("UICorner", Overlay).CornerRadius = UDim.new(0, 16)
 
-    -- Sidebar (Khu vực Tab chính)
+    local Stroke = Instance.new("UIStroke", self.Main)
+    Stroke.Color = Color3.fromRGB(255, 255, 255)
+    Stroke.Transparency = 0.85
+
+    -- Sidebar (Kính mờ)
     self.Sidebar = Instance.new("Frame", self.Main)
-    self.Sidebar.Size = UDim2.new(0, 160, 1, -20)
-    self.Sidebar.Position = UDim2.new(0, 10, 0, 10)
-    self.Sidebar.BackgroundTransparency = 0.9
+    self.Sidebar.Size = UDim2.new(0, 180, 1, -30)
+    self.Sidebar.Position = UDim2.new(0, 15, 0, 15)
     self.Sidebar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    self.Sidebar.BackgroundTransparency = 0.94
     Instance.new("UICorner", self.Sidebar).CornerRadius = UDim.new(0, 12)
-
+    
     local Title = Instance.new("TextLabel", self.Sidebar)
     Title.Text = hubName
     Title.Size = UDim2.new(1, 0, 0, 50)
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 18
+    Title.TextSize = 20
     Title.BackgroundTransparency = 1
 
     self.TabList = Instance.new("ScrollingFrame", self.Sidebar)
@@ -76,73 +78,73 @@ function Library.new(hubName)
     self.TabList.Position = UDim2.new(0, 5, 0, 55)
     self.TabList.BackgroundTransparency = 1
     self.TabList.ScrollBarThickness = 0
-    local TabListLayout = Instance.new("UIListLayout", self.TabList)
-    TabListLayout.Padding = UDim.new(0, 5)
+    local Layout = Instance.new("UIListLayout", self.TabList)
+    Layout.Padding = UDim.new(0, 6)
 
-    -- Page Container (Nơi chứa các tab con)
-    self.PageContainer = Instance.new("Frame", self.Main)
-    self.PageContainer.Size = UDim2.new(1, -190, 1, -20)
-    self.PageContainer.Position = UDim2.new(0, 180, 0, 10)
-    self.PageContainer.BackgroundTransparency = 1
-    self.PageContainer.ClipsDescendants = true -- Đảm bảo không bị tràn nội dung
+    -- Page Container
+    self.Container = Instance.new("Frame", self.Main)
+    self.Container.Size = UDim2.new(1, -230, 1, -30)
+    self.Container.Position = UDim2.new(0, 215, 0, 15)
+    self.Container.BackgroundTransparency = 1
+    self.Container.ClipsDescendants = true
 
-    EnableDrag(self.Main, self.Main)
+    MakeDraggable(self.Main, self.Main)
     return self
 end
 
 function Library:CreateTab(name)
     local TabBtn = Instance.new("TextButton", self.TabList)
-    TabBtn.Size = UDim2.new(1, 0, 0, 35)
+    TabBtn.Size = UDim2.new(1, 0, 0, 40)
     TabBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     TabBtn.BackgroundTransparency = 1
     TabBtn.Text = name
     TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
     TabBtn.Font = Enum.Font.GothamSemibold
-    TabBtn.TextSize = 14
-    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
+    TabBtn.TextSize = 15
+    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 10)
 
-    -- Page (Nổi lên mờ mờ)
-    local Page = Instance.new("ScrollingFrame", self.PageContainer)
+    local Page = Instance.new("ScrollingFrame", self.Container)
     Page.Size = UDim2.size(1, 0, 1, 0)
     Page.BackgroundTransparency = 1
     Page.Visible = false
-    Page.ScrollBarThickness = 0
+    Page.ScrollBarThickness = 2
+    Page.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
     local PageList = Instance.new("UIListLayout", Page)
-    PageList.Padding = UDim.new(0, 10)
+    PageList.Padding = UDim.new(0, 12)
 
-    -- Logic chuyển Tab cực mượt
+    -- Chuyển Tab cực mịn
     TabBtn.MouseButton1Click:Connect(function()
         for i, v in pairs(self.Tabs) do
-            v.Page.Visible = false -- Ẩn tất cả các trang khác ngay lập tức
+            v.Page.Visible = false
             SmoothTween(v.Btn, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(200, 200, 200)})
         end
-        Page.Visible = true -- Chỉ hiện trang được chọn
-        SmoothTween(TabBtn, {BackgroundTransparency = 0.8, TextColor3 = Color3.fromRGB(255, 255, 255)})
+        Page.Visible = true
+        SmoothTween(TabBtn, {BackgroundTransparency = 0.9, TextColor3 = Color3.fromRGB(255, 255, 255)})
     end)
 
     table.insert(self.Tabs, {Page = Page, Btn = TabBtn})
     
-    -- Mặc định mở tab đầu tiên
+    -- Mặc định mở tab đầu
     if #self.Tabs == 1 then
         Page.Visible = true
-        TabBtn.BackgroundTransparency = 0.8
+        TabBtn.BackgroundTransparency = 0.9
         TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     end
 
     local Elements = {}
 
-    -- Section (Nhóm chức năng nổi)
+    -- Section (Nhóm nổi nổi)
     function Elements:CreateSection(title)
         local SecFrame = Instance.new("Frame", Page)
-        SecFrame.Size = UDim2.new(1, -5, 0, 30)
+        SecFrame.Size = UDim2.new(1, -5, 0, 25)
         SecFrame.BackgroundTransparency = 1
         
         local SecLabel = Instance.new("TextLabel", SecFrame)
         SecLabel.Text = title:upper()
         SecLabel.Size = UDim2.new(1, 0, 1, 0)
-        SecLabel.TextColor3 = Color3.fromRGB(85, 200, 255)
+        SecLabel.TextColor3 = Color3.fromRGB(75, 170, 255) -- Màu điểm nhấn xanh Cyan
         SecLabel.Font = Enum.Font.GothamBold
-        SecLabel.TextSize = 12
+        SecLabel.TextSize = 13
         SecLabel.BackgroundTransparency = 1
         SecLabel.TextXAlignment = Enum.TextXAlignment.Left
     end
@@ -150,27 +152,27 @@ function Library:CreateTab(name)
     -- Button (Nổi xịn mịn)
     function Elements:CreateButton(text, callback)
         local Btn = Instance.new("TextButton", Page)
-        Btn.Size = UDim2.new(1, -10, 0, 42)
+        Btn.Size = UDim2.new(1, -10, 0, 45)
         Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        Btn.BackgroundTransparency = 0.92
+        Btn.BackgroundTransparency = 0.94
         Btn.Text = "      " .. text
         Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
         Btn.Font = Enum.Font.Gotham
         Btn.TextSize = 14
         Btn.TextXAlignment = Enum.TextXAlignment.Left
         
-        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 10)
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 12)
         local BStroke = Instance.new("UIStroke", Btn)
         BStroke.Color = Color3.fromRGB(255, 255, 255)
-        BStroke.Transparency = 0.9
+        BStroke.Transparency = 0.92
 
         Btn.MouseEnter:Connect(function() 
-            SmoothTween(Btn, {BackgroundTransparency = 0.8, BackgroundColor3 = Color3.fromRGB(255, 255, 255)}) 
-            SmoothTween(BStroke, {Transparency = 0.5})
+            SmoothTween(Btn, {BackgroundTransparency = 0.86, BackgroundColor3 = Color3.fromRGB(255, 255, 255)}) 
+            SmoothTween(BStroke, {Transparency = 0.6})
         end)
         Btn.MouseLeave:Connect(function() 
-            SmoothTween(Btn, {BackgroundTransparency = 0.92, BackgroundColor3 = Color3.fromRGB(255, 255, 255)}) 
-            SmoothTween(BStroke, {Transparency = 0.9})
+            SmoothTween(Btn, {BackgroundTransparency = 0.94, BackgroundColor3 = Color3.fromRGB(255, 255, 255)}) 
+            SmoothTween(BStroke, {Transparency = 0.92})
         end)
         Btn.MouseButton1Click:Connect(callback)
     end
@@ -179,23 +181,18 @@ function Library:CreateTab(name)
 end
 
 ---------------------------------------------------------
--- KHỞI CHẠY SCRIPT MẪU
+-- Example Usage (Sử dụng mẫu)
 ---------------------------------------------------------
-local UI = Library.new("ZICZAC PRO V2")
+local UI = Library.new("ZICZAC ULTRA HUB")
 
--- Tab Combat
 local Combat = UI:CreateTab("Combat")
-Combat:CreateSection("Main Combat")
-Combat:CreateButton("Auto Kill All", function() print("Killed!") end)
+Combat:CreateSection("Auto Combat")
+Combat:CreateButton("Kill Aura (Smooth)", function() print("Killed!") end)
 Combat:CreateButton("Teleport to Boss", function() print("Teleported!") end)
 
--- Tab Visuals
 local Visuals = UI:CreateTab("Visuals")
 Visuals:CreateSection("ESP & Effects")
-Visuals:CreateButton("Enable ESP", function() print("ESP On") end)
-Visuals:CreateButton("Full Brightness", function() print("Bright!") end)
+Visuals:CreateButton("Player ESP", function() print("Player ESP!") end)
+Visuals:CreateButton("Full Brightness", function() print("Brightness!") end)
 
--- Tab Settings
-local Config = UI:CreateTab("Settings")
-Config:CreateSection("Customization")
-Config:CreateButton("Destroy UI", function() UI.ScreenGui:Destroy() end)
+print("VIP PRO ULTRA UI Loaded!")
