@@ -1,0 +1,205 @@
+local Library = {}
+Library.__index = Library
+
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+-- Hàm hỗ trợ Tween nhanh
+local function QuickTween(obj, goal, time)
+    TweenService:Create(obj, TweenInfo.new(time or 0.3, Enum.EasingStyle.Quart), goal):Play()
+end
+
+-- Hàm hỗ trợ kéo thả (Smooth Dragging)
+local function MakeDraggable(frame, parent)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = parent.Position
+        end
+    end)
+    frame.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            parent.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+-- KHỞI TẠO THƯ VIỆN
+function Library.new(hubName)
+    local self = setmetatable({}, Library)
+
+    -- ScreenGui
+    self.ScreenGui = Instance.new("ScreenGui", CoreGui)
+    self.ScreenGui.ResetOnSpawn = false
+
+    -- Main Frame (Background Image)
+    self.MainFrame = Instance.new("ImageLabel", self.ScreenGui)
+    self.MainFrame.Size = UDim2.new(0, 600, 0, 400)
+    self.MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+    self.MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    self.MainFrame.BorderSizePixel = 0
+    self.MainFrame.ClipsDescendants = true
+    self.MainFrame.Image = "" -- Mặc định không có ảnh
+    
+    Instance.new("UICorner", self.MainFrame).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", self.MainFrame)
+    Stroke.Color = Color3.fromRGB(45, 45, 45)
+    Stroke.Thickness = 1.5
+
+    -- Overlay (Lớp phủ làm tối ảnh nền)
+    self.Overlay = Instance.new("Frame", self.MainFrame)
+    self.Overlay.Size = UDim2.new(1, 0, 1, 0)
+    self.Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    self.Overlay.BackgroundTransparency = 0.4
+    self.Overlay.ZIndex = 0
+
+    -- Header (Kéo thả ở đây)
+    self.Header = Instance.new("Frame", self.MainFrame)
+    self.Header.Size = UDim2.new(1, 0, 0, 40)
+    self.Header.BackgroundTransparency = 1
+    MakeDraggable(self.Header, self.MainFrame)
+
+    local Title = Instance.new("TextLabel", self.Header)
+    Title.Text = hubName
+    Title.Size = UDim2.new(1, -20, 1, 0)
+    Title.Position = UDim2.new(0, 15, 0, 0)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 16
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Sidebar
+    self.Sidebar = Instance.new("ScrollingFrame", self.MainFrame)
+    self.Sidebar.Size = UDim2.new(0, 160, 1, -50)
+    self.Sidebar.Position = UDim2.new(0, 10, 0, 45)
+    self.Sidebar.BackgroundTransparency = 1
+    self.Sidebar.ScrollBarThickness = 0
+    
+    Instance.new("UIListLayout", self.Sidebar).Padding = UDim.new(0, 5)
+
+    -- Container cho các Trang
+    self.PageContainer = Instance.new("Frame", self.MainFrame)
+    self.PageContainer.Size = UDim2.new(1, -190, 1, -55)
+    self.PageContainer.Position = UDim2.new(0, 180, 0, 45)
+    self.PageContainer.BackgroundTransparency = 1
+
+    self.PageLayout = Instance.new("UIPageLayout", self.PageContainer)
+    self.PageLayout.TweenTime = 0.4
+    self.PageLayout.EasingStyle = Enum.EasingStyle.Quart
+
+    return self
+end
+
+-- CÁC PHƯƠNG THỨC TÙY CHỈNH
+function Library:SetThemeColor(color)
+    QuickTween(self.MainFrame.UIStroke, {Color = color}, 0.5)
+end
+
+function Library:SetBackground(id, transparency)
+    self.MainFrame.Image = "rbxassetid://" .. tostring(id)
+    self.MainFrame.ImageTransparency = transparency or 0
+end
+
+-- TẠO TAB
+function Library:CreateTab(name)
+    local TabButton = Instance.new("TextButton", self.Sidebar)
+    TabButton.Size = UDim2.new(1, 0, 0, 35)
+    TabButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    TabButton.BackgroundTransparency = 1
+    TabButton.Text = name
+    TabButton.TextColor3 = Color3.fromRGB(180, 180, 180)
+    TabButton.Font = Enum.Font.GothamSemibold
+    TabButton.TextSize = 14
+    Instance.new("UICorner", TabButton).CornerRadius = UDim.new(0, 6)
+
+    local Page = Instance.new("ScrollingFrame", self.PageContainer)
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.ScrollBarThickness = 2
+    Page.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+    local List = Instance.new("UIListLayout", Page)
+    List.Padding = UDim.new(0, 8)
+
+    TabButton.MouseButton1Click:Connect(function()
+        self.PageLayout:JumpTo(Page)
+        for _, v in pairs(self.Sidebar:GetChildren()) do
+            if v:IsA("TextButton") then
+                QuickTween(v, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
+            end
+        end
+        QuickTween(TabButton, {BackgroundTransparency = 0.9, TextColor3 = Color3.fromRGB(255, 255, 255)})
+    end)
+
+    local Elements = {}
+    
+    -- TẠO NÚT BẤM (BUTTON)
+    function Elements:CreateButton(text, callback)
+        local Button = Instance.new("TextButton", Page)
+        Button.Size = UDim2.new(1, -10, 0, 40)
+        Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        Button.Text = "  " .. text
+        Button.TextColor3 = Color3.fromRGB(230, 230, 230)
+        Button.Font = Enum.Font.Gotham
+        Button.TextSize = 14
+        Button.TextXAlignment = Enum.TextXAlignment.Left
+        Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6)
+
+        Button.MouseButton1Click:Connect(callback)
+        Button.MouseEnter:Connect(function() QuickTween(Button, {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}) end)
+        Button.MouseLeave:Connect(function() QuickTween(Button, {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}) end)
+    end
+
+    -- TẠO TAB CON (SUB-TAB LOGIC)
+    function Elements:CreateSubTab(subName)
+        local Label = Instance.new("TextLabel", Page)
+        Label.Size = UDim2.new(1, 0, 0, 20)
+        Label.Text = "--- " .. subName:upper() .. " ---"
+        Label.BackgroundTransparency = 1
+        Label.TextColor3 = Color3.fromRGB(100, 100, 100)
+        Label.Font = Enum.Font.GothamBold
+        Label.TextSize = 10
+    end
+
+    return Elements
+end
+
+---------------------------------------------------------
+-- EXAMPLE USAGE (CÁCH SỬ DỤNG)
+---------------------------------------------------------
+
+local UI = Library.new("ZICZAC EXECUTOR V63")
+
+-- Chỉnh theme và ảnh nền (ID 7072724424 là một ví dụ ảnh mờ)
+UI:SetThemeColor(Color3.fromRGB(0, 170, 255)) 
+UI:SetBackground(7072724424, 0.5)
+
+-- Tab 1
+local MainTab = UI:CreateTab("Trang Chính")
+MainTab:CreateSubTab("Chức năng Auto")
+MainTab:CreateButton("Auto Farm Level", function()
+    print("Đang Farm...")
+end)
+MainTab:CreateButton("Auto Chest", function()
+    print("Đang lấy rương...")
+end)
+
+-- Tab 2
+local Settings = UI:CreateTab("Cài Đặt")
+Settings:CreateSubTab("Giao diện")
+Settings:CreateButton("Đổi Theme Sang Đỏ", function()
+    UI:SetThemeColor(Color3.fromRGB(255, 0, 0))
+end)
+Settings:CreateButton("Xóa Ảnh Nền", function()
+    UI:SetBackground(0, 1)
+end)
+
+print("UI Library Loaded Successfully!")
